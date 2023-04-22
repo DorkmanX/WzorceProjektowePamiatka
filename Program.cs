@@ -52,7 +52,17 @@ public class Program
             int strzal2 = Convert.ToInt32(Console.ReadLine());
 
             State current_state = State.DeepCopy(state);
-            current_state.SetBoardState(strzal, strzal2);
+
+            bool correct_move = current_state.SetBoardState(strzal, strzal2);
+            if(!correct_move ) 
+            { 
+                goto BEGIN; 
+            }
+            string win_message = string.Empty;
+            bool isWin = false;
+            (isWin,win_message) = CheckWin();
+
+            if ( isWin ) { Console.WriteLine(win_message); Console.ReadKey(); Environment.Exit(0); }
             current_state.SetNextMove();
 
             Memento current_state_memento = new Memento(current_state);
@@ -82,6 +92,36 @@ public class Program
                 Console.WriteLine("");
             }
         }
+        public (bool,string) CheckWin()
+        {
+            int diagonal1sum = 0;
+
+            List<List<int>> board = state.GetBoardState();
+            for (int i = 0; i < board.Count(); i++)
+            {
+                int vertical_sum = 0;
+                int horizontal_sum = 0;
+                for (int j = 0; j < board[i].Count(); j++)
+                {
+                    horizontal_sum += board[i][j];
+                    vertical_sum += board[j][i];
+                    if (i == j)
+                        diagonal1sum += board[i][j];
+
+                    if (horizontal_sum == 3 || vertical_sum == 3) return (true, "Wygrał X");
+                    else if (horizontal_sum == -3 || vertical_sum == -3) return (true, "Wygrał Y");
+                }
+            }
+            if (diagonal1sum == 3) return (true, "Wygrał X");
+            else if (diagonal1sum == -3) return (true, "Wygrał Y");
+
+            int diagonal2sum = board[2][0] + board[1][1] + board[0][2];
+
+            if (diagonal2sum == 3) return (true, "Wygrał X");
+            else if (diagonal2sum == -3) return (true, "Wygrał Y");
+
+            return (false,"None");
+        }
         internal class Memento
         {
             public State _State { get; private set; }
@@ -106,19 +146,31 @@ public class Program
                 this.maxRowNumber = maxRowNumber;
             }
 
-            public void SetBoardState(int index, int index2)
+            public bool SetBoardState(int index, int index2)
             {
+                bool correct = true;
                 if (this._NextMove == 1)
                 {
                     if (index <= maxColumnNumber && index2 <= maxRowNumber && (index >= 0 && index2 >= 0))
                         this._Board[index][index2] = 1;
+                    else
+                    {
+                        Console.WriteLine("Wyszedles po za zakres planszy");
+                        correct = false;
+                    }
                     
                 }
                 else
                 {
                     if (index <= maxColumnNumber && index2 <= maxRowNumber && (index >= 0 && index2 >= 0))
                         this._Board[index][index2] = -1;
+                    else
+                    {
+                        Console.WriteLine("Wyszedles po za zakres planszy");
+                        correct = false;
+                    }
                 }
+                return correct;
             }
             public List<List<int>> GetBoardState()
             {
