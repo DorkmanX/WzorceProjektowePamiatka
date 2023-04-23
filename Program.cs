@@ -60,7 +60,7 @@ public class Program
             }
             string win_message = string.Empty;
             bool isWin = false;
-            (isWin,win_message) = CheckWin();
+            (isWin,win_message) = CheckWin(current_state.GetBoardState());
 
             if ( isWin ) { Console.WriteLine(win_message); Console.ReadKey(); Environment.Exit(0); }
             current_state.SetNextMove();
@@ -70,13 +70,13 @@ public class Program
 
             state = current_state;
         }
-        public void ReverseMove()
+        private void ReverseMove()
         {
             stack.DeleteLast();
             Memento old_memento = (Memento)stack.GetLast();
-            state = State.DeepCopy(old_memento._State);
+            state = State.DeepCopy(old_memento.GetState());
         }
-        public void PrintBoard()
+        private void PrintBoard()
         {
             foreach (var item in state.GetBoardState())
             {
@@ -92,11 +92,10 @@ public class Program
                 Console.WriteLine("");
             }
         }
-        public (bool,string) CheckWin()
+        private (bool,string) CheckWin(List<List<int>> board)
         {
             int diagonal1sum = 0;
 
-            List<List<int>> board = state.GetBoardState();
             for (int i = 0; i < board.Count(); i++)
             {
                 int vertical_sum = 0;
@@ -124,12 +123,17 @@ public class Program
         }
         internal class Memento
         {
-            public State _State { get; private set; }
+            private State _State;
             public Memento(State state)
             {
                 _State = state;
             }
             public Memento() { }
+
+            internal State GetState()
+            {
+                return this._State;
+            }
         }
         internal class State
         {
